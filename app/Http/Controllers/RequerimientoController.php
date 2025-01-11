@@ -86,7 +86,7 @@ class RequerimientoController extends Controller
      */
     public function show(Requerimiento $requerimiento)
     {
-        $data = $this->requerimientoRepositoryInterface->getById($requerimiento->solicitud_id);
+        $data = $this->requerimientoRepositoryInterface->getById($requerimiento->id);
         if($data->isEmpty()){
             $data = [
                 'message' => 'No se encontraron registros',
