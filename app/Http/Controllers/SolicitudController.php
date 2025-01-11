@@ -19,13 +19,22 @@ class SolicitudController extends Controller
     {
         $this->solicitudRepositoryInterface = $solicitudRepositoryInterface;
     }
-    
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $data = $this->solicitudRepositoryInterface->index();
+        if($data->isEmpty()){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(SolicitudResource::collection($data),'',200);
     }
 
     /**
@@ -96,7 +105,17 @@ class SolicitudController extends Controller
      */
     public function show(Solicitud $solicitud)
     {
-        //
+        $data[] = $this->solicitudRepositoryInterface->getById($solicitud->getAttributes()['id']);
+
+        if(!$data){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(SolicitudResource::collection($data),'',200);
     }
 
     /**

@@ -25,7 +25,16 @@ class SoporteController extends Controller
      */
     public function index()
     {
-        //
+        $data = $this->soporteRepositoryInterface->index();
+        if($data->isEmpty()){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(SoporteResource::collection($data),'',200);
     }
 
     /**
@@ -73,7 +82,17 @@ class SoporteController extends Controller
      */
     public function show(Soporte $soporte)
     {
-        //
+        $data[] = $this->soporteRepositoryInterface->getById($soporte->getAttributes()['id']);
+
+        if(!$data){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(SoporteResource::collection($data),'',200);
     }
 
     /**
