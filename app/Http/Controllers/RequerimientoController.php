@@ -27,7 +27,16 @@ class RequerimientoController extends Controller
      */
     public function index()
     {
-        //
+        $data = $this->requerimientoRepositoryInterface->index();
+        if($data->isEmpty()){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(RequerimientoResource::collection($data),'',200);
     }
 
     /**
@@ -77,7 +86,16 @@ class RequerimientoController extends Controller
      */
     public function show(Requerimiento $requerimiento)
     {
-        //
+        $data = $this->requerimientoRepositoryInterface->getById($requerimiento->solicitud_id);
+        if($data->isEmpty()){
+            $data = [
+                'message' => 'No se encontraron registros',
+                'status' => 404
+            ];
+            return ApiResponseClass::sendResponse($data,'',404);
+        }
+
+        return ApiResponseClass::sendResponse(RequerimientoResource::collection($data),'',200);
     }
 
     /**

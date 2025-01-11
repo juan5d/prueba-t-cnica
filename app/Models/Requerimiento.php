@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Solicitud;
+use App\Models\Soporte;
 class Requerimiento extends Model
 {
     /** @use HasFactory<\Database\Factories\RequerimientoFactory> */

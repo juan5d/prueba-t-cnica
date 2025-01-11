@@ -19,9 +19,11 @@ class RequerimientoRepository implements RequerimientoRepositoryInterface
      * @param int $id
      * @return Requerimiento
      */
-    public function getById($id)
+    public function getById($solicitudId)
     {
-        return Requerimiento::with(['solicitud', 'soporte'])->findOrFail($id);
+        return Requerimiento::with(['solicitud', 'soporte']) // Eager loading
+        ->where('solicitud_id', $solicitudId) // Buscar por solicitud_id
+        ->get(); // Obtener todos los registros que coincidan
     }
 
     /**
