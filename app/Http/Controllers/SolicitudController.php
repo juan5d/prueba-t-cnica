@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Interfaces\RequerimientoRepositoryInterface;
 use App\Interfaces\SolicitudRepositoryInterface;
 use App\Classes\ApiResponseClass;
 use App\Http\Resources\SolicitudResource;
@@ -14,10 +15,13 @@ use App\Models\Solicitud;
 class SolicitudController extends Controller
 {
     private SolicitudRepositoryInterface $solicitudRepositoryInterface;
+    private RequerimientoRepositoryInterface $requerimientoRepositoryInterface;
     
-    public function __construct(SolicitudRepositoryInterface $solicitudRepositoryInterface)
+    public function __construct(SolicitudRepositoryInterface $solicitudRepositoryInterface,
+    RequerimientoRepositoryInterface $requerimientoRepositoryInterface)
     {
         $this->solicitudRepositoryInterface = $solicitudRepositoryInterface;
+        $this->requerimientoRepositoryInterface = $requerimientoRepositoryInterface;
     }
 
     /**
@@ -48,52 +52,48 @@ class SolicitudController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // SolicitudController.php
     public function store(StoreSolicitudRequest $request)
-{
-    // Obtener los datos validados del formulario
-    
+    {
+        DB::beginTransaction();
 
-    DB::beginTransaction();
+        try {
+            $details = $request->validated();
+            $solicitud = $this->solicitudRepositoryInterface->store($details);
 
-    try {
-        $details = $request->validated();
-        // Crear la solicitud
-        $solicitud = $this->solicitudRepositoryInterface->store($details);
+            // Obtener soporte aleatorio
+            $soporte = \App\Models\Soporte::inRandomOrder()->first();
+            
+            if (!$soporte) {
+                throw new \Exception("No hay soportes disponibles para asignar.");
+            }
 
-        // Obtener un soporte de manera aleatoria
-        $soporte = \App\Models\Soporte::inRandomOrder()->first();
+            // Crear el requerimiento mediante el repositorio
+            $requerimientoDetails = [
+                'solicitud_id' => $solicitud->id,
+                'soporte_id' => $soporte->id,
+                'comentario' => 'Asignación automática de soporte',
+                'estado' => 'Asignado',
+                'fecha_solucion' => null, // Puedes establecer una fecha predeterminada si es necesario
+            ];
 
-        if (!$soporte) {
-            throw new \Exception("No hay soportes disponibles para asignar.");
+            $this->requerimientoRepositoryInterface->store($requerimientoDetails);
+
+            DB::commit();
+
+            return ApiResponseClass::sendResponse(
+                new SolicitudResource($solicitud),
+                'Solicitud creada exitosamente y asignada a un soporte',
+                201
+            );
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            dd($ex);
+            \Log::error('Error en SolicitudController@store: ' . $ex->getMessage());
+            return ApiResponseClass::rollback($ex);
         }
-
-        // Crear el registro en la tabla requerimientos
-        \App\Models\Requerimiento::create([
-            'solicitud_id' => $solicitud->id,
-            'soporte_id' => $soporte->id,
-            'comentario' => 'Asignación automática de soporte',
-            'estado' => 'Asignado',
-            'fecha_solucion' => null, // O establece una fecha predeterminada si es necesario
-        ]);
-
-        // Confirmar la transacción
-        DB::commit();
-
-        // Devolver una respuesta de éxito
-        return ApiResponseClass::sendResponse(
-            new SolicitudResource($solicitud),
-            'Solicitud creada exitosamente y asignada a un soporte',
-            201
-        );
-    } catch (\Exception $ex) {
-        DB::rollBack();
-        // Registrar el error para depuración
-        \Log::error('Error en SolicitudController@store: ' . $ex->getMessage());
-
-        // Devolver una respuesta de error usando tu sistema personalizado
-        return ApiResponseClass::rollback($ex);
     }
-}
+
 
     /**
      * Display the specified resource.

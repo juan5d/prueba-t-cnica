@@ -24,7 +24,7 @@ class StoreRequerimientoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'solicitud_id' => 'required|integer|exists:solicitudes,id',
+            'solicitud_id' => 'required|integer|exists:solicituds,id',
             'soporte_id' => 'required|integer|exists:soportes,id',
             'comentario' => 'nullable|string|max:255',
             'estado' => 'required|string|in:Asignado,Pendiente,Resuelto'

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreRequerimientoRequest;
 use App\Http\Requests\UpdateRequerimientoRequest;
 use App\Models\Requerimiento;
-
+use App\Models\Solicitud;
 
 
 class RequerimientoController extends Controller
@@ -27,6 +27,7 @@ class RequerimientoController extends Controller
      */
     public function index()
     {
+        dd("");
         $data = $this->requerimientoRepositoryInterface->index();
         if($data->isEmpty()){
             $data = [
@@ -52,11 +53,18 @@ class RequerimientoController extends Controller
      */
     public function store(StoreRequerimientoRequest $request)
     {
-        
+        // Obtener los datos validados del formulario
+        $details = [
+            'solicitud_id' => $request->solicitud_id,
+            'soporte_id' => $request->soporte_id,
+            'comentario' => $request->comentario,
+            'estado' => $request->estado,
+            'fecha_solucion' => $request->fecha_solucion,
+        ];
+
         DB::beginTransaction();
 
         try {
-            $details = $request->validated();
             $requerimiento = $this->requerimientoRepositoryInterface->store($details);
 
             // Confirmar la transacción
@@ -77,7 +85,7 @@ class RequerimientoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Requerimiento $requerimiento)
+    public function show(Solicitud $requerimiento)
     {
         $data = $this->requerimientoRepositoryInterface->getById($requerimiento->id);
         if($data->isEmpty()){
