@@ -7,7 +7,6 @@ use App\Classes\ApiResponseClass;
 use App\Http\Resources\SolicitudResource;
 use Illuminate\Support\Facades\DB;
 
-use App\Http\Requests\StoreRequerimientoRequest;
 use App\Http\Requests\StoreSolicitudRequest;
 use App\Http\Requests\UpdateSolicitudRequest;
 use App\Models\Solicitud;
@@ -50,43 +49,51 @@ class SolicitudController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(StoreSolicitudRequest $request)
-    {
-        DB::beginTransaction();
+{
+    // Obtener los datos validados del formulario
+    
 
-        try {
-            // Crear la solicitud
-            $details = $request->validated();
-            $solicitud = $this->solicitudRepositoryInterface->store($details);
+    DB::beginTransaction();
 
-            // Obtener un soporte aleatorio
-            $soporte = \App\Models\Soporte::inRandomOrder()->first();
-            if (!$soporte) {
-                throw new \Exception("No hay soportes disponibles para asignar.");
-            }
+    try {
+        $details = $request->validated();
+        // Crear la solicitud
+        $solicitud = $this->solicitudRepositoryInterface->store($details);
 
-            // Llamar a RequerimientoController@store
-            $requerimientoRequest = new StoreRequerimientoRequest([
-                'solicitud_id' => $solicitud->id,
-                'soporte_id' => $soporte->id,
-                'comentario' => 'Asignación automática de soporte',
-                'estado' => 'Asignado',
-                'fecha_solucion' => null,
-            ]);
+        // Obtener un soporte de manera aleatoria
+        $soporte = \App\Models\Soporte::inRandomOrder()->first();
 
-            $this->requerimientoController->store($requerimientoRequest);
-
-            DB::commit();
-
-            return ApiResponseClass::sendResponse(
-                new SolicitudResource($solicitud),
-                'Solicitud creada exitosamente y asignada a un soporte',
-                201
-            );
-        } catch (\Exception $ex) {
-            DB::rollBack();
-            return ApiResponseClass::rollback($ex);
+        if (!$soporte) {
+            throw new \Exception("No hay soportes disponibles para asignar.");
         }
+
+        // Crear el registro en la tabla requerimientos
+        \App\Models\Requerimiento::create([
+            'solicitud_id' => $solicitud->id,
+            'soporte_id' => $soporte->id,
+            'comentario' => 'Asignación automática de soporte',
+            'estado' => 'Asignado',
+            'fecha_solucion' => null, // O establece una fecha predeterminada si es necesario
+        ]);
+
+        // Confirmar la transacción
+        DB::commit();
+
+        // Devolver una respuesta de éxito
+        return ApiResponseClass::sendResponse(
+            new SolicitudResource($solicitud),
+            'Solicitud creada exitosamente y asignada a un soporte',
+            201
+        );
+    } catch (\Exception $ex) {
+        DB::rollBack();
+        // Registrar el error para depuración
+        \Log::error('Error en SolicitudController@store: ' . $ex->getMessage());
+
+        // Devolver una respuesta de error usando tu sistema personalizado
+        return ApiResponseClass::rollback($ex);
     }
+}
 
     /**
      * Display the specified resource.

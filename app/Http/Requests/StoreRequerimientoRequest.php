@@ -24,11 +24,10 @@ class StoreRequerimientoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'solicitud_id' => 'required',
-            'soporte_id' => 'required',
-            'comentario' => 'required',
-            'estado' => 'required',
-            'fecha_solucion' => 'required|date',
+            'solicitud_id' => 'required|integer|exists:solicitudes,id',
+            'soporte_id' => 'required|integer|exists:soportes,id',
+            'comentario' => 'nullable|string|max:255',
+            'estado' => 'required|string|in:Asignado,Pendiente,Resuelto'
         ];
     }
 

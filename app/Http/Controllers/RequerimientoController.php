@@ -52,7 +52,7 @@ class RequerimientoController extends Controller
      */
     public function store(StoreRequerimientoRequest $request)
     {
-
+        
         DB::beginTransaction();
 
         try {
