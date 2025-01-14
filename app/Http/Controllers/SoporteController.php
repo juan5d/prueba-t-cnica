@@ -50,16 +50,11 @@ class SoporteController extends Controller
      */
     public function store(StoreSoporteRequest $request)
     {
-        // Obtener los datos validados del formulario
-        $details = [
-            'nombre' => $request->nombre,
-            'apellido' => $request->apellido,
-            'correo' => $request->correo,
-        ];
 
         DB::beginTransaction();
 
         try {
+            $details = $request->validated();
             $soporte = $this->soporteRepositoryInterface->store($details);
 
             // Confirmar la transacción

@@ -52,18 +52,11 @@ class RequerimientoController extends Controller
      */
     public function store(StoreRequerimientoRequest $request)
     {
-        // Obtener los datos validados del formulario
-        $details = [
-            'solicitud_id' => $request->solicitud_id,
-            'soporte_id' => $request->soporte_id,
-            'comentario' => $request->comentario,
-            'estado' => $request->estado,
-            'fecha_solucion' => $request->fecha_solucion,
-        ];
 
         DB::beginTransaction();
 
         try {
+            $details = $request->validated();
             $requerimiento = $this->requerimientoRepositoryInterface->store($details);
 
             // Confirmar la transacción
