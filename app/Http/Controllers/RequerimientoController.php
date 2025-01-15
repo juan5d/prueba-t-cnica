@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreRequerimientoRequest;
 use App\Http\Requests\UpdateRequerimientoRequest;
 use App\Models\Requerimiento;
-
+use App\Models\Solicitud;
 
 
 class RequerimientoController extends Controller
@@ -27,6 +27,7 @@ class RequerimientoController extends Controller
      */
     public function index()
     {
+        dd("");
         $data = $this->requerimientoRepositoryInterface->index();
         if($data->isEmpty()){
             $data = [
@@ -84,7 +85,7 @@ class RequerimientoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Requerimiento $requerimiento)
+    public function show(Solicitud $requerimiento)
     {
         $data = $this->requerimientoRepositoryInterface->getById($requerimiento->id);
         if($data->isEmpty()){
